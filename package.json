@@ -2,12 +2,44 @@
   "name": "ynab-converter",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "author": "Finn Poppinga",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "prepublish": "yarn build"
+    "prepublish": "yarn build",
+    "test": "jest"
   },
   "devDependencies": {
+    "@types/commander": "^2.9.2",
+    "@types/jest": "^20.0.8",
+    "@types/moment": "^2.13.0",
+    "@types/mz": "^0.0.31",
+    "ts-jest": "^20.0.14",
     "typescript": "^2.5.2"
+  },
+  "dependencies": {
+    "commander": "^2.11.0",
+    "moment": "^2.18.1",
+    "mz": "^2.6.0"
+  },
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ],
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageThreshold": {
+      "global": {
+        "lines": 90
+      }
+    }
   }
 }
