@@ -1,0 +1,13 @@
+{
+  "name": "ynab-converter",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "yarn build"
+  },
+  "devDependencies": {
+    "typescript": "^2.5.2"
+  }
+}
