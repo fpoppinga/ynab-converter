@@ -3,7 +3,7 @@ import {YNABRecord} from '../model/ynab';
 import * as moment from 'moment';
 
 export class YNABConverter {
-    constructor(private reader: IReader) {}
+    constructor(private reader: IReader, private ignorePayee: boolean = true) {}
 
     async convert(): Promise<string> {
         const lines = [];
@@ -27,12 +27,14 @@ export class YNABConverter {
     private serializeRecord(record: YNABRecord): string {
         return [
             moment(record.date).format("DD/MM/YYYY"),
-            record.payee,
+            this.ignorePayee ? "" : record.payee,
             record.category,
             record.memo,
             this.formatAmount(record.outflow),
             this.formatAmount(record.inflow)
-        ].join(this.separator);
+        ]
+            .map(v => v.replace(new RegExp(this.separator, "g"), ''))
+            .join(this.separator);
     }
 
     private formatAmount(amount: number): string {
