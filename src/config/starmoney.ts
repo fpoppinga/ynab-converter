@@ -20,7 +20,7 @@ export class StarmoneyMapping extends BaseInputMapping {
 
 export const StarmoneyFields: FieldMapping<string> = new Map<YNABField, string>([
     ['date', 'Wertstellungsdatum'],
-    ['memo', 'Empfänger/Absender'],
+    ['memo', 'VWZ 1'],
     ['category', 'Kategorie'],
     ['payee', ''],
     ['inflow', 'Betrag'],
