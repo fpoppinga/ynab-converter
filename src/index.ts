@@ -5,10 +5,16 @@ import {StarmoneyFields, StarmoneyMapping, StarmoneySeparators} from './config/s
 import * as fs from 'mz/fs';
 import {YNABConverter} from './io/ynabConverter';
 import * as path from 'path';
+import {Command} from 'commander';
 
-program.version('0.1.0')
+program
+    .version('1.0.0')
     .command('<input> [<output>]', 'parse StarMoney export format and output it as YNAB format.')
-    .action(async (input : string, output : string) => {
+    .action(async (input : string, output : string | Command) => {
+        if (typeof output !== "string") {
+            output = input.replace(/\.txt$/, ".csv");
+        }
+
         try {
             const file = await fs.readFile(path.resolve(input));
             const reader = new CsvReader(StarmoneySeparators, StarmoneyFields, new StarmoneyMapping(), file.toString('utf-8'));
