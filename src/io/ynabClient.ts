@@ -1,11 +1,15 @@
-import {api as YNABApi, SaveTransaction} from "ynab"
-import {YNABRecord} from '../model/ynab';
+import { api as YNABApi, SaveTransaction } from "ynab";
+import { YNABRecord } from "../model/ynab";
 
 export class YnabClient {
     private api: YNABApi;
     private _accountId: string | null = null;
 
-    constructor(private appToken: string, private accountName: string, private budgetId: string | null = null) {
+    constructor(
+        private appToken: string,
+        private accountName: string,
+        private budgetId: string | null = null
+    ) {
         this.api = new YNABApi(appToken);
     }
 
@@ -13,9 +17,14 @@ export class YnabClient {
         try {
             const budgetId = await this.getBudgetId();
 
-            const response = await this.api.transactions.bulkCreateTransactions(budgetId, {
-                transactions: await Promise.all(transactions.map(t => this.convertTransaction(t)))
-            });
+            const response = await this.api.transactions.bulkCreateTransactions(
+                budgetId,
+                {
+                    transactions: await Promise.all(
+                        transactions.map(t => this.convertTransaction(t))
+                    )
+                }
+            );
 
             console.info("response: ", response);
         } catch (e) {
@@ -44,18 +53,28 @@ export class YnabClient {
             return this._accountId;
         }
 
-        const accounts = await this.api.accounts.getAccounts(await this.getBudgetId());
+        const accounts = await this.api.accounts.getAccounts(
+            await this.getBudgetId()
+        );
 
-        const matchingAccounts = accounts.data.accounts.filter(a => RegExp(name, "i").test(a.name));
+        const matchingAccounts = accounts.data.accounts.filter(a =>
+            RegExp(name, "i").test(a.name)
+        );
         if (matchingAccounts.length > 1) {
-            console.error("Account name is ambiguos. Candidates: ", matchingAccounts.map(a => a.name));
+            console.error(
+                "Account name is ambiguos. Candidates: ",
+                matchingAccounts.map(a => a.name)
+            );
             throw new Error("AMBIGUOUS_ACCOUNT");
         }
 
         const matchingAccount = matchingAccounts[0];
 
         if (!matchingAccount) {
-            console.error("Can't find a matching account! Possibilities:", accounts.data.accounts.map(a => a.name));
+            console.error(
+                "Can't find a matching account! Possibilities:",
+                accounts.data.accounts.map(a => a.name)
+            );
             throw new Error("NO_MATCHING_ACCOUNT");
         }
 
@@ -70,6 +89,6 @@ export class YnabClient {
             amount: (t.inflow - t.outflow) * 1e3,
             memo: t.memo.slice(0, 100),
             cleared: SaveTransaction.ClearedEnum.Cleared
-        }
+        };
     }
 }

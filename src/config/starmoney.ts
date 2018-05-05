@@ -1,6 +1,6 @@
-import * as moment from 'moment';
-import {BaseInputMapping, FieldMapping, Separators} from '../io/csvReader';
-import {YNABField} from '../model/ynab';
+import * as moment from "moment";
+import { BaseInputMapping, FieldMapping, Separators } from "../io/csvReader";
+import { YNABField } from "../model/ynab";
 
 export class StarmoneyMapping extends BaseInputMapping {
     date(input: string): Date {
@@ -18,16 +18,18 @@ export class StarmoneyMapping extends BaseInputMapping {
     }
 }
 
-export const StarmoneyFields: FieldMapping<string> = new Map<YNABField, string>([
-    ['date', 'Wertstellungsdatum'],
-    ['memo', 'VWZ 1'],
-    ['category', 'Kategorie'],
-    ['payee', ''],
-    ['inflow', 'Betrag'],
-    ['outflow', 'Betrag']
-]);
+export const StarmoneyFields: FieldMapping<string> = new Map<YNABField, string>(
+    [
+        ["date", "Wertstellungsdatum"],
+        ["memo", "VWZ 1"],
+        ["category", "Kategorie"],
+        ["payee", ""],
+        ["inflow", "Betrag"],
+        ["outflow", "Betrag"]
+    ]
+);
 
 export const StarmoneySeparators: Separators = {
-    lineSeparator: '\n',
-    valueSeparator: ';'
+    lineSeparator: "\n",
+    valueSeparator: ";"
 };

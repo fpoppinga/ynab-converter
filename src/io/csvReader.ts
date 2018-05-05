@@ -1,7 +1,6 @@
-
-import {IReader} from './reader';
-import {YNABField, YNABRecord} from '../model/ynab';
-import * as moment from 'moment';
+import { IReader } from "./reader";
+import { YNABField, YNABRecord } from "../model/ynab";
+import * as moment from "moment";
 
 export interface IInputMapping {
     date(input: string): Date;
@@ -13,27 +12,27 @@ export interface IInputMapping {
 }
 
 export class BaseInputMapping implements IInputMapping {
-    date(input : string) : Date {
+    date(input: string): Date {
         return moment(input).toDate();
     }
 
-    payee(input : string) : string {
+    payee(input: string): string {
         return input;
     }
 
-    category(input : string) : string {
+    category(input: string): string {
         return input;
     }
 
-    memo(input : string) : string {
+    memo(input: string): string {
         return input;
     }
 
-    outflow(input : string) : number {
+    outflow(input: string): number {
         return Number(input);
     }
 
-    inflow(input : string) : number {
+    inflow(input: string): number {
         return Number(input);
     }
 }
@@ -53,13 +52,18 @@ export class CsvReader implements IReader {
         private text: string
     ) {}
 
-    *read() : IterableIterator<YNABRecord> {
+    *read(): IterableIterator<YNABRecord> {
         const lines = this.text.trim().split(this.separators.lineSeparator);
 
-        const fieldMapping = this.calculateFieldIndices(lines[0].split(this.separators.valueSeparator).map(l => l.trim()));
+        const fieldMapping = this.calculateFieldIndices(
+            lines[0].split(this.separators.valueSeparator).map(l => l.trim())
+        );
 
         for (const line of lines.slice(1)) {
-            yield this.toRecord(line.split(this.separators.valueSeparator), fieldMapping);
+            yield this.toRecord(
+                line.split(this.separators.valueSeparator),
+                fieldMapping
+            );
         }
     }
 
@@ -73,7 +77,11 @@ export class CsvReader implements IReader {
         return result;
     }
 
-    private getField<FIELD extends YNABField>(fieldName: FIELD, fieldsValues: string[], fieldMapping: FieldMapping<number>): YNABRecord[FIELD] {
+    private getField<FIELD extends YNABField>(
+        fieldName: FIELD,
+        fieldsValues: string[],
+        fieldMapping: FieldMapping<number>
+    ): YNABRecord[FIELD] {
         const index = fieldMapping.get(fieldName);
         if (typeof index === "undefined") {
             throw new Error("FieldMapping is incomplete!");
@@ -82,14 +90,17 @@ export class CsvReader implements IReader {
         return this.inputMapping[fieldName](fieldsValues[index]);
     }
 
-    private toRecord(fieldsValues: string[], fieldMapping: FieldMapping<number>): YNABRecord {
+    private toRecord(
+        fieldsValues: string[],
+        fieldMapping: FieldMapping<number>
+    ): YNABRecord {
         return {
-            date: this.getField('date', fieldsValues, fieldMapping),
-            payee: this.getField('payee', fieldsValues, fieldMapping),
-            memo: this.getField('memo', fieldsValues, fieldMapping),
-            category: this.getField('category', fieldsValues, fieldMapping),
-            outflow: this.getField('outflow', fieldsValues, fieldMapping),
-            inflow: this.getField('inflow', fieldsValues, fieldMapping)
-        }
+            date: this.getField("date", fieldsValues, fieldMapping),
+            payee: this.getField("payee", fieldsValues, fieldMapping),
+            memo: this.getField("memo", fieldsValues, fieldMapping),
+            category: this.getField("category", fieldsValues, fieldMapping),
+            outflow: this.getField("outflow", fieldsValues, fieldMapping),
+            inflow: this.getField("inflow", fieldsValues, fieldMapping)
+        };
     }
 }

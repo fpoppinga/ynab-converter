@@ -1,6 +1,6 @@
-import {IReader} from './reader';
-import {YNABRecord} from '../model/ynab';
-import * as moment from 'moment';
+import { IReader } from "./reader";
+import { YNABRecord } from "../model/ynab";
+import * as moment from "moment";
 
 export class YNABConverter {
     constructor(private reader: IReader, private ignorePayee: boolean = true) {}
@@ -33,7 +33,7 @@ export class YNABConverter {
             this.formatAmount(record.outflow),
             this.formatAmount(record.inflow)
         ]
-            .map(v => v.replace(new RegExp(this.separator, "g"), ''))
+            .map(v => v.replace(new RegExp(this.separator, "g"), ""))
             .join(this.separator);
     }
 
@@ -45,6 +45,6 @@ export class YNABConverter {
         return amount.toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
-        })
+        });
     }
 }

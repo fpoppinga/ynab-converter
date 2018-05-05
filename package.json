@@ -5,6 +5,8 @@
   "author": "Finn Poppinga",
   "license": "MIT",
   "scripts": {
+    "prettier": "prettier --write '**/*.{ts,tsx,js,jsx,.json}'",
+    "prettier:check": "prettier -l '**/*.{ts,tsx,js,jsx,.json}'",
     "build": "tsc",
     "prepublish": "yarn build",
     "test": "jest"
