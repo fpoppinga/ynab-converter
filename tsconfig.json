@@ -9,7 +9,7 @@
     /* Strict Type-Checking Options */
     "strict": true,
     /* Enable all strict type-checking options. */
-    "lib": ["es6"],
+    "lib": ["es6", "dom"],
     "outDir": "dist",
     "sourceMap": true
   }
