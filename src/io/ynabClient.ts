@@ -1,3 +1,4 @@
+import * as crypto from "crypto";
 import { api as YNABApi, SaveTransaction } from "ynab";
 import { YNABRecord } from "../model/ynab";
 
@@ -83,12 +84,20 @@ export class YnabClient {
     }
 
     private async convertTransaction(t: YNABRecord): Promise<SaveTransaction> {
+        const amount = (t.inflow - t.outflow) * 1e3;
+        const date = t.date.toISOString();
+        const hash = crypto
+            .createHash("sha256")
+            .update(t.memo)
+            .digest("hex");
+
         return {
             account_id: await this.getAccountId(this.accountName),
-            date: t.date.toISOString(),
-            amount: (t.inflow - t.outflow) * 1e3,
+            date,
+            amount,
             memo: t.memo.slice(0, 100),
-            cleared: SaveTransaction.ClearedEnum.Cleared
+            cleared: SaveTransaction.ClearedEnum.Cleared,
+            import_id: (date + ":" + amount + ":" + hash).substring(0, 36)
         };
     }
 }
