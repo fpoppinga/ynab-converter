@@ -4,7 +4,7 @@ import { YNABField } from "../model/ynab";
 
 export class StarmoneyMapping extends BaseInputMapping {
     date(input: string): Date {
-        return moment(input, "YYYY-MM-DD").toDate();
+        return moment.utc(input, "YYYY-MM-DD").toDate();
     }
 
     outflow(input: string): number {
