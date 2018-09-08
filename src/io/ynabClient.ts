@@ -1,10 +1,10 @@
-import * as crypto from "crypto";
 import { api as YNABApi, SaveTransaction } from "ynab";
 import { YNABRecord } from "../model/ynab";
 
 export class YnabClient {
     private api: YNABApi;
     private _accountId: string | null = null;
+    private _importIdCounter = new Map<string, number>();
 
     constructor(
         private appToken: string,
@@ -86,10 +86,10 @@ export class YnabClient {
     private async convertTransaction(t: YNABRecord): Promise<SaveTransaction> {
         const amount = (t.inflow - t.outflow) * 1e3;
         const date = t.date.toISOString();
-        const hash = crypto
-            .createHash("sha256")
-            .update(t.memo)
-            .digest("hex");
+
+        const prefix = `YNAB:${date}:${amount}`;
+        const currentCounter = this._importIdCounter.get(prefix) || 1;
+        this._importIdCounter.set(prefix, currentCounter + 1);
 
         return {
             account_id: await this.getAccountId(this.accountName),
@@ -97,7 +97,7 @@ export class YnabClient {
             amount,
             memo: t.memo.slice(0, 100),
             cleared: SaveTransaction.ClearedEnum.Cleared,
-            import_id: (date + ":" + amount + ":" + hash).substring(0, 36)
+            import_id: `${prefix}:${currentCounter}`
         };
     }
 }

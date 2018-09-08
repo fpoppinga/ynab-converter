@@ -47,6 +47,7 @@
       "global": {
         "lines": 90
       }
-    }
+    },
+    "testEnvironment": "node"
   }
 }
