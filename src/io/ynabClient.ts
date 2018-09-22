@@ -85,7 +85,7 @@ export class YnabClient {
 
     private async convertTransaction(t: YNABRecord): Promise<SaveTransaction> {
         const amount = (t.inflow - t.outflow) * 1e3;
-        const date = t.date.toISOString();
+        const date = t.date.toISOString().substring(0, 10);
 
         const prefix = `YNAB:${date}:${amount}`;
         const currentCounter = this._importIdCounter.get(prefix) || 1;
