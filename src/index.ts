@@ -12,6 +12,7 @@ import * as path from "path";
 import { Command } from "commander";
 import { config as initEnvironment } from "dotenv";
 import { YnabClient } from "./io/ynabClient";
+import { getLatestFileForAccount } from "./io/finder";
 
 initEnvironment();
 
@@ -43,6 +44,39 @@ program
         }
     });
 
+async function pushAccount(
+    input: string,
+    accountName: string,
+    token: string,
+    budget: string
+) {
+    let resolvedPath = path.resolve(input);
+    const stats = await fs.lstat(resolvedPath);
+    if (stats.isDirectory()) {
+        resolvedPath = path.resolve(
+            path.join(
+                input,
+                await getLatestFileForAccount(resolvedPath, accountName)
+            )
+        );
+    }
+
+    const file = await fs.readFile(resolvedPath);
+    const reader = new CsvReader(
+        StarmoneySeparators,
+        StarmoneyFields,
+        new StarmoneyMapping(),
+        file.toString("utf-8")
+    );
+
+    const ynabClient = new YnabClient(
+        token,
+        accountName,
+        budget
+    );
+    await ynabClient.createTransactions([...reader.read()]);
+}
+
 program
     .command("push <input>")
     .option(
@@ -60,10 +94,13 @@ program
         recent change will be used.`
     )
     .option(
-        "-a, --account <account>",
-        `
-        Your account's name. Partial name is enough.
-    `
+        "-a, --account [account]",
+        `Your account's names. Partial names are sufficient.`,
+        (value, memo) => {
+            memo.push(value);
+            return memo;
+        },
+        []
     )
     .description(
         "parse StarMoney export format and push contents to YNAB directly."
@@ -75,27 +112,17 @@ program
             return process.exit(1);
         }
 
-        const accountName = command.opts()["account"];
-        if (!accountName) {
+        const accountNames: string[] = command.opts()["account"];
+
+        if (accountNames.length === 0) {
             console.error("You have to provide an account name.");
             return process.exit(1);
         }
 
         try {
-            const file = await fs.readFile(path.resolve(input));
-            const reader = new CsvReader(
-                StarmoneySeparators,
-                StarmoneyFields,
-                new StarmoneyMapping(),
-                file.toString("utf-8")
-            );
-
-            const ynabClient = new YnabClient(
-                token,
-                accountName,
-                command.opts()["budget"]
-            );
-            await ynabClient.createTransactions([...reader.read()]);
+            for (const accountName of accountNames) {
+                await pushAccount(input, accountName, token, command.opts()["budget"]);
+            }
         } catch (err) {
             console.error("Error when pushing: ", err);
             process.exit(1);

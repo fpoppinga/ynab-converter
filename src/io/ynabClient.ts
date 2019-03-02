@@ -94,10 +94,10 @@ export class YnabClient {
         return {
             account_id: await this.getAccountId(this.accountName),
             date,
-            amount,
+            amount: Math.round(amount),
             memo: t.memo.slice(0, 100),
             cleared: SaveTransaction.ClearedEnum.Cleared,
-            import_id: `${prefix}:${currentCounter}`
+            import_id: `${prefix}:${currentCounter}`.substring(0, 36)
         };
     }
 }
