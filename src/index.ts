@@ -13,6 +13,7 @@ import { Command } from "commander";
 import { config as initEnvironment } from "dotenv";
 import { YnabClient } from "./io/ynabClient";
 import { getLatestFileForAccount } from "./io/finder";
+import { DKBFields, DKBMapping, DKBSeparators } from "./config/dkb";
 
 initEnvironment();
 
@@ -48,7 +49,8 @@ async function pushAccount(
     input: string,
     accountName: string,
     token: string,
-    budget: string
+    budget: string,
+    format: string
 ) {
     let resolvedPath = path.resolve(input);
     const stats = await fs.lstat(resolvedPath);
@@ -62,19 +64,33 @@ async function pushAccount(
     }
 
     const file = await fs.readFile(resolvedPath);
-    const reader = new CsvReader(
-        StarmoneySeparators,
-        StarmoneyFields,
-        new StarmoneyMapping(),
-        file.toString("utf-8")
-    );
+    const reader = getReader(file, format);
 
-    const ynabClient = new YnabClient(
-        token,
-        accountName,
-        budget
-    );
+    const ynabClient = new YnabClient(token, accountName, budget);
     await ynabClient.createTransactions([...reader.read()]);
+}
+
+function getReader(file: Buffer, format: string): CsvReader {
+    if (format === "starmoney") {
+        return new CsvReader(
+            StarmoneySeparators,
+            StarmoneyFields,
+            new StarmoneyMapping(),
+            file.toString("utf-8")
+        );
+    }
+
+    if (format === "dkb") {
+        return new CsvReader(
+            DKBSeparators,
+            DKBFields,
+            new DKBMapping(),
+            file.toString("utf-8"),
+            7
+        );
+    }
+
+    throw new Error(`Illegal value for "format": ${format}`);
 }
 
 program
@@ -102,6 +118,12 @@ program
         },
         []
     )
+    .option(
+        "-f, --format [format]",
+        `a format specifier. One of starmoney, dkb`,
+        /(starmoney)|(dkb)/,
+        "starmoney"
+    )
     .description(
         "parse StarMoney export format and push contents to YNAB directly."
     )
@@ -120,9 +142,17 @@ program
         }
 
         try {
-            for (const accountName of accountNames) {
-                await pushAccount(input, accountName, token, command.opts()["budget"]);
-            }
+            await Promise.all(
+                accountNames.map(accountName =>
+                    pushAccount(
+                        input,
+                        accountName,
+                        token,
+                        command.opts()["budget"],
+                        command.opts()["format"]
+                    )
+                )
+            );
         } catch (err) {
             console.error("Error when pushing: ", err);
             process.exit(1);

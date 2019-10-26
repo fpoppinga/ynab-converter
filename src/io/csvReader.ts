@@ -42,6 +42,22 @@ export type FieldMapping<T> = Map<YNABField, T>;
 export interface Separators {
     lineSeparator: string;
     valueSeparator: string;
+    quote?: string;
+}
+
+function trim(x: string, c: string | undefined): string {
+    if (!c) return x;
+
+    let res = x;
+    while (res.startsWith(c)) {
+        res = res.substr(1);
+    }
+
+    while (res.endsWith(c)) {
+        res = res.substr(0, res.length - 1);
+    }
+
+    return res;
 }
 
 export class CsvReader implements IReader {
@@ -49,19 +65,27 @@ export class CsvReader implements IReader {
         private separators: Separators,
         private fieldMapping: FieldMapping<string>,
         private inputMapping: IInputMapping,
-        private text: string
+        private text: string,
+        private skipLines: number = 0
     ) {}
 
     *read(): IterableIterator<YNABRecord> {
-        const lines = this.text.trim().split(this.separators.lineSeparator);
+        const lines = this.text
+            .trim()
+            .split(this.separators.lineSeparator)
+            .slice(this.skipLines);
 
         const fieldMapping = this.calculateFieldIndices(
-            lines[0].split(this.separators.valueSeparator).map(l => l.trim())
+            lines[0]
+                .split(this.separators.valueSeparator)
+                .map(l => trim(l.trim(), this.separators.quote))
         );
 
         for (const line of lines.slice(1)) {
             yield this.toRecord(
-                line.split(this.separators.valueSeparator),
+                line
+                    .split(this.separators.valueSeparator)
+                    .map(l => trim(l.trim(), this.separators.quote)),
                 fieldMapping
             );
         }
