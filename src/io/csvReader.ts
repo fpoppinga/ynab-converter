@@ -111,7 +111,7 @@ export class CsvReader implements IReader {
             throw new Error("FieldMapping is incomplete!");
         }
 
-        return this.inputMapping[fieldName](fieldsValues[index]);
+        return this.inputMapping[fieldName](fieldsValues[index]) as YNABRecord[FIELD];
     }
 
     private toRecord(

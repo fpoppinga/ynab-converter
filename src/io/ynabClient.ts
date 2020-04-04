@@ -18,7 +18,7 @@ export class YnabClient {
         try {
             const budgetId = await this.getBudgetId();
 
-            const response = await this.api.transactions.bulkCreateTransactions(
+            const response = await this.api.transactions.createTransactions(
                 budgetId,
                 {
                     transactions: await Promise.all(
@@ -40,13 +40,16 @@ export class YnabClient {
 
         const response = await this.api.budgets.getBudgets();
 
-        return response.data.budgets.sort((a, b) => {
+        const budgetId = response.data.budgets.sort((a, b) => {
             if (!a.last_modified_on || !b.last_modified_on) {
                 return 0;
             }
 
             return a.last_modified_on.localeCompare(b.last_modified_on);
         })[0].id;
+
+        this.budgetId = budgetId;
+        return budgetId;
     }
 
     private async getAccountId(name: string): Promise<string> {

@@ -109,13 +109,10 @@ program
         The name of your YNAB Budget. If you don't provide a budget, the one with the most 
         recent change will be used.`
     )
-    .option(
+    .option<string[]>(
         "-a, --account [account]",
         `Your account's names. Partial names are sufficient.`,
-        (value, memo) => {
-            memo.push(value);
-            return memo;
-        },
+        (value, memo) => [...memo, value],
         []
     )
     .option(
