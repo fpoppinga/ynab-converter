@@ -17,12 +17,12 @@ export class YnabClient {
     async createTransactions(transactions: Array<YNABRecord>): Promise<void> {
         try {
             const budgetId = await this.getBudgetId();
-
+            const accountId = await this.getAccountId(this.accountName);
             const response = await this.api.transactions.createTransactions(
                 budgetId,
                 {
                     transactions: await Promise.all(
-                        transactions.map(t => this.convertTransaction(t))
+                        transactions.map(t => this.convertTransaction(accountId, t))
                     )
                 }
             );
@@ -86,7 +86,7 @@ export class YnabClient {
         return matchingAccount.id;
     }
 
-    private async convertTransaction(t: YNABRecord): Promise<SaveTransaction> {
+    private async convertTransaction(accountId: string, t: YNABRecord): Promise<SaveTransaction> {
         const amount = (t.inflow - t.outflow) * 1e3;
         const date = t.date.toISOString().substring(0, 10);
 
@@ -95,7 +95,7 @@ export class YnabClient {
         this._importIdCounter.set(prefix, currentCounter + 1);
 
         return {
-            account_id: await this.getAccountId(this.accountName),
+            account_id: accountId,
             date,
             amount: Math.round(amount),
             memo: t.memo.slice(0, 100),
